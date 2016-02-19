@@ -1,7 +1,19 @@
-<h2>Welcome to the app</h2>
+<!-- <h2>Welcome to the test app</h2>
 
-<p>This app is by {{ name }}</p>
+<p>This app is by {{ name }}</p> -->
 
-<div id="mapDiv"></div>
+<div id="mainWindow" data-dojo-type="dijit/layout/BorderContainer" data-dojo-props="design:'headline'">
+
+<div id="header" data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'top'">
+      <span>Draw:<br /></span>
+      <button data-dojo-type="dijit/form/Button">Point</button>
+      <button data-dojo-type="dijit/form/Button">Polygon</button>
+      <button data-dojo-type="dijit/form/Button">Freehand Polyline</button>
+      <button data-dojo-type="dijit/form/Button">Freehand Polygon</button>
+      
+ </div>
+
+<div id="mapDiv" data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'center'"></div>
 
 <div id="graphDiv"></div>
+</div>

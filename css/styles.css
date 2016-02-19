@@ -1,4 +1,17 @@
 #mapDiv {
-	width: 600px;
+	width: 800px;
 	height: 600px;
 }
+
+ html, body, #mainWindow {
+        font-family: sans-serif; 
+        height: 100%; 
+        width: 100%; 
+      }
+
+
+#header {
+        height: 80px; 
+        background-color: #555;
+        padding: 0.5em;
+      }
