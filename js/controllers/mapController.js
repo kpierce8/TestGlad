@@ -33,7 +33,9 @@ require([
 		});
 
       map.on("load", createToolbar);
-
+      var layers = [];
+      layers.push(testlayer);
+map.addLayers(layers);
 
 		// loop through all dijits, connect onClick event
         // listeners for buttons to activate drawing tools
@@ -58,9 +60,17 @@ require([
           toolbar.on("draw-end", addToMap);
         }
 
+    var testUrl = "http://services.arcgis.com/rcya3vExsaVBGUDp/arcgis/rest/services/test_map/FeatureServer/0"
+
+    var testlayer = new FeatureLayer(testUrl, {
+        mode: FeatureLayer.MODE_ONDEMAND,
+        outFields: ['*']
+      });
+
 
   function addToMap(evt) {
           var symbol;
+          this.editing = true;
           toolbar.deactivate();
           map.showZoomSlider();
           switch (evt.geometry.type) {
@@ -75,10 +85,19 @@ require([
               symbol = new SimpleFillSymbol();
               break;
           }
-          var graphic = new Graphic(evt.geometry, symbol);
-          map.graphics.add(graphic);
+          var attributes = {};
+         
+          attributes.Id = 1;
+          attributes.Species = "Tree";
+          var graphic = new Graphic(evt.geometry, symbol, attributes);
+          console.log(graphic);
+          testlayer.applyEdits([graphic]).then(alert("well alerts work"));
+          this.editing = false;
+          //map.graphics.add(graphic);
+
         }
-		//var testlayer = new FeatureLayer()
+		
+       
 
 
 	}); //end require statement
