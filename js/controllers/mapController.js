@@ -11,6 +11,7 @@ require([
 	'esri/layers/FeatureLayer',
 	'esri/tasks/query',
 	'esri/tasks/QueryTask',
+  "esri/InfoTemplate",
 	'esri/symbols/SimpleMarkerSymbol',
    "esri/symbols/SimpleLineSymbol",
     "esri/symbols/SimpleFillSymbol",
@@ -22,7 +23,7 @@ require([
 	'dijit/layout/ContentPane', 
   'dijit/form/Button',
   'dijit/WidgetSet',
-	'dojo/domReady'], function(Map, Draw, Graphic, Color,  FeatureLayer, Query, QueryTask, SimpleMarkerSymbol, 
+	'dojo/domReady'], function(Map, Draw, Graphic, Color,  FeatureLayer, Query, QueryTask, InfoTemplate, SimpleMarkerSymbol, 
     SimpleLineSymbol, SimpleFillSymbol, Editor, TemplatePicker, parser, registry){
 
     parser.parse({rootNode: header});
@@ -38,8 +39,17 @@ require([
  //   var testUrl = "http://services.arcgis.com/rcya3vExsaVBGUDp/arcgis/rest/services/GLADTest2/FeatureServer/0"
     var testUrl1 =  "http://services.arcgis.com/rcya3vExsaVBGUDp/arcgis/rest/services/TestOne/FeatureServer/0"
 
+
+var testTemplate = new InfoTemplate("Polygon attributes", "Species: ${Species}\
+      <br>Poly Type: ${PolyType}<br>Creation Date: ${CreationD}\
+      <br>WRIA: ${WRIA}");
+
+
+
+
     var testlayer = new FeatureLayer(testUrl1, {
         mode: FeatureLayer.MODE_ONDEMAND,
+        infoTemplate: testTemplate,
         outFields: ['*']
       });
 
