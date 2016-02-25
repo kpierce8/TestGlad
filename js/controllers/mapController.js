@@ -31,7 +31,7 @@ require([
 
     parser.parse({rootNode: header});
 
-    esriConfig.defaults.io.proxyUrl = "/proxy/";    
+  //  esriConfig.defaults.io.proxyUrl = "/proxy/";    
 
 		map = new Map('mapDiv', {
 			basemap: 'topo',
@@ -96,8 +96,8 @@ require([
 
  map.on("layers-add-result", initEditing);
 
- function initEditing(evt){
-   var templateLayers = arrayUtils.map(evt.layers, function(result){
+ function initEditing(bob){
+   var templateLayers = arrayUtils.map(bob.layers, function(result){
      return result.layer;
    });
 
@@ -110,7 +110,7 @@ require([
           templatePicker.startup();
  
 
- var eLayers = arrayUtils.map(evt.layers, function(result) {
+ var eLayers = arrayUtils.map(bob.layers, function(result) {
             return { featureLayer: result.layer };
           });
 
