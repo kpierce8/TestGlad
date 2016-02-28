@@ -42,7 +42,6 @@ require([
 		});
 
     var testUrl1 =  "http://services.arcgis.com/rcya3vExsaVBGUDp/arcgis/rest/services/TestOne/FeatureServer/0"
-
     var cityUgaUrl = "https://services.arcgis.com/6lCKYNJLvwTXqrmp/arcgis/rest/services/CityUGA/FeatureServer/0/query?outFields=*&where=1%3D1"
     var wriaUrl = "https://services.arcgis.com/6lCKYNJLvwTXqrmp/arcgis/rest/services/WAECY_WRIA/FeatureServer/0/query?outFields=*&where=1%3D1"
 
@@ -53,79 +52,84 @@ require([
     var testlayer = new FeatureLayer(testUrl1, {
         mode: FeatureLayer.MODE_ONDEMAND,
         // infoTemplate: testTemplate,
-        outFields: ['Species', 'FID', 'VitalSign', 'WRIA', 'Creator', 'EditDate']
+        outFields: ['Species', 'FID', 'VitalSign', 'WRIA', 'Creator', 'EditDate', 'County']
         //outFields: ['*']
       });
 
-     var wrialayer = new FeatureLayer(wriaUrl, {
+    var wrialayer = new FeatureLayer(wriaUrl, {
         mode: FeatureLayer.MODE_ONDEMAND,
         // infoTemplate: testTemplate,
         //outFields: ['Species', 'FID', 'VitalSign', 'WRIA', 'Creator', 'EditDate']
         outFields: ['*']
       });
 
-// STRAT INTERACTION CODE
-
-      map.on("load", createToolbar);
-      var layers = [];
+    var layers = [];
       layers.push(wrialayer);
       layers.push(testlayer);
 
       map.addLayers(layers);
 
-
-        registry.forEach(function(d) {
+// STRAT INTERACTION CODE
+      registry.forEach(function(d) {
           if ( d.declaredClass === "dijit.form.Button" ) {
             d.on("click", activateTool);
           }
-        });
+         });
 
-        function activateTool() {
+      function activateTool() {
+          console.log("Activate Tool");
           var tool = this.label.toUpperCase().replace(/ /g, "_");
           console.log(tool);
           toolbar.activate(Draw[tool]);
           map.hideZoomSlider();
-        }
+          }
 
+      map.on("load", createToolbar);
+
+      function createToolbar(amap) {
+        console.log("creating toolbar");
+        toolbar = new Draw(map);
+        toolbar.on("draw-end", addToMap);
+        }
 
 // Original editing code, adds polygons based on sandbox sample
 // 3  //
 //Adding new polygons
-  function addToMap(evt) {
-    console.log("the evt is " + evt.geometry);
-          var symbol;
-          this.editing = true;
-          toolbar.deactivate();
-          map.showZoomSlider();
-          switch (evt.geometry.type) {
-            case "polyline":
-              symbol = new SimpleLineSymbol();
-              break;
-            default:
-              symbol = new SimpleFillSymbol(SimpleFillSymbol.STYLE_SOLID,
-              new SimpleLineSymbol(SimpleLineSymbol.STYLE_DASHDOT,
-              new Color([0,255,0,1]), 2),new Color([255,255,0,0.25])
-                );
-              break;
-          }
-          var attributes = {};
-         
-          attributes.Id = 1;
-          attributes.Species = "Tree";
-          var graphic = new Graphic(evt.geometry, symbol, attributes);
-          console.log(graphic);
-          console.log(testlayer.graphics.count);
-          testlayer.applyEdits([graphic]).then(alert("Enjoy this fun test popup"));
-          this.editing = false;
-          testlayer.refresh();
-        }
+      function addToMap(evt) {
+        // doesn't fire till after mouse button is raised after finishing draw
+        console.log("Add to Map");
+        console.log(evt.geometry);
+        var startPointCoord = evt.geometry.rings[0][0];
+        console.log(startPointCoord);
+              var symbol;
+           //   this.editing = true;
+              toolbar.deactivate();
+              map.showZoomSlider();
+              switch (evt.geometry.type) {
+                case "polyline":
+                  symbol = new SimpleLineSymbol();
+                  break;
+                default:
+                  symbol = new SimpleFillSymbol(SimpleFillSymbol.STYLE_SOLID,
+                  new SimpleLineSymbol(SimpleLineSymbol.STYLE_DASHDOT,
+                  new Color([0,255,0,1]), 2),new Color([255,255,0,0.25])
+                    );
+                  break;
+              }
+              var attributes = {};
+             
+              attributes.Id = 1;
+              attributes.Species = "Tree";
+              var graphic = new Graphic(evt.geometry, symbol, attributes);
+              console.log(graphic);
+             // console.log(this.testlayer.graphics.count);
+              testlayer.applyEdits([graphic]).then(alert("Enjoy this fun test popup"));
+            //  this.editing = false;
+              testlayer.refresh();
+            }
 
-  
-      function createToolbar(amap) {
-        console.log("creating toolbar");
-          toolbar = new Draw(map);
-          toolbar.on("draw-end", addToMap);
-        }
+      
+
 
 // Editor code coming from Building Web and Mobile ArcGIS Server Applications with Javascript PACKT 2014
 
@@ -136,109 +140,97 @@ require([
 // Polygon geometry editing
  map.on("layers-add-result", initEditing);
 
- function initEditing(bob){
-   var templateLayers = arrayUtils.map(bob.layers, function(result){
-     return result.layer;
-   });
-
- var templatePicker = new TemplatePicker({
-            featureLayers: templateLayers,
-            grouping: true,
-            rows: "auto",
-            columns: 1
-          }, "templateDiv");
-          templatePicker.startup();
  
+function initEditing(bob){
+  console.log("Init Editing");
+      var templateLayers = arrayUtils.map(bob.layers, function(result){
+       return result.layer;
+      });
 
- var eLayers = arrayUtils.map(bob.layers, function(result) {
-            return { featureLayer: result.layer };
-          });
+      var templatePicker = new TemplatePicker({
+              featureLayers: templateLayers,
+              grouping: true,
+              rows: "auto",
+              columns: 1
+            }, "templateDiv");
+            templatePicker.startup();
+   
 
- // 1  //
-// Attribute Inspector //
-var attrInfos = [{
-'featureLayer': testlayer,
-'showAttachments': false,
-'isEditable': true,
-'fieldInfos': [
-{'fieldName': 'Species', 'isEditable':true, 'tooltip': 'Species data', 'label':'Species:'},
-{'fieldName': 'FID', 'isEditable':true, 'tooltip': 'The autogenerated ID', 'label':'Field Name:'},
-{'fieldName': 'VitalSign', 'isEditable':false,'label':'Vital Sign:'},
-{'fieldName': 'WRIA', 'isEditable':true,'tooltip': 'Water Resources Inventory Area ID','label':'WRIA:'},
-{'fieldName': 'County', 'isEditable':true,'tooltip': 'County','label':'County:'},
-{'fieldName': 'Creator', 'isEditable':false,'label':'Polygon Creator:'},
-{'fieldName': 'EditDate', 'isEditable':false,'label':'Last date edited:'}
-]
-}];
+      // var eLayers = arrayUtils.map(bob.layers, function(result) {
+      //         console.log(result);
+      //         return { featureLayer: result.layer };
+      //       });
 
-var attInspector = new AttributeInspector({
-layerInfos:attrInfos
-}, domConstruct.create("div"));
+    // 1  //
+    // Attribute Inspector //
+    var attrInfos = [{
+      'featureLayer': testlayer,
+      'showAttachments': false,
+      'isEditable': true,
+      'fieldInfos': [
+            {'fieldName': 'Species', 'isEditable':true, 'tooltip': 'Species data', 'label':'Species:'},
+            {'fieldName': 'FID', 'isEditable':true, 'tooltip': 'The autogenerated ID', 'label':'FID:'},
+            {'fieldName': 'VitalSign', 'isEditable':true,'label':'Vital Sign:'},
+            {'fieldName': 'WRIA', 'isEditable':true,'tooltip': 'Water Resources Inventory Area ID','label':'WRIA:'},
+            {'fieldName': 'County', 'isEditable':true,'tooltip': 'County','label':'County:'},
+            {'fieldName': 'Creator', 'isEditable':false,'label':'Polygon Creator:'},
+            {'fieldName': 'EditDate', 'isEditable':false,'label':'Last date edited:'}
+            ]
+      }];
 
-  attInspector.on("delete", function(evt) {
-    evt.feature.getLayer().applyEdits(null, null, [evt.feature]);
-    map.infoWindow.hide();
-  });
- 
+    var attInspector = new AttributeInspector({
+      layerInfos:attrInfos
+      }, domConstruct.create("div"));
 
- var saveButton = new Button({ label: "Save", "class": "saveButton"},domConstruct.create("div"));
-  
-  domConstruct.place(saveButton.domNode, attInspector.deleteBtn.domNode, "after");
+      attInspector.on("delete", function(evt) {
+        evt.feature.getLayer().applyEdits(null, null, [evt.feature]);
+        map.infoWindow.hide();
+        console.log("DELETE attInspector ran");
+        });
+   
 
-  saveButton.on("click", function() {
-    updateFeature.getLayer().applyEdits(null, [updateFeature], null);
-  });
-
-  attInspector.on("attribute-change", function(evt) {
-    //store the updates to apply when the save button is clicked 
-    updateFeature.attributes[evt.fieldName] = evt.fieldValue;
-  });
-
-  attInspector.on("next", function(evt) {
-    updateFeature = evt.feature;
-    console.log("Next " + updateFeature.attributes.OBJECTID);
-  });
-
-
-
-
-map.infoWindow.setContent(attInspector.domNode);
-map.infoWindow.resize(350, 240);
+    // var saveButton = new Button({ label: "Save", "class": "saveButton"},domConstruct.create("div"));
+    // domConstruct.place(saveButton.domNode, attInspector.deleteBtn.domNode, "after");
+    // saveButton.on("click", function() {
+    //   updateFeature.getLayer().applyEdits(null, [updateFeature], null);
+    // });
+    // attInspector.on("attribute-change", function(evt) {
+    //   //store the updates to apply when the save button is clicked 
+    //   updateFeature.attributes[evt.fieldName] = evt.fieldValue;
+    // });
+    // attInspector.on("next", function(evt) {
+    //   updateFeature = evt.feature;
+    //   console.log("Next " + updateFeature.attributes.OBJECTID);
+    // });
 
 
-  var settings = {
-      map: map,
-      geometryService: new GeometryService("https://tasks.arcgisonline.com/arcgis/rest/services/Geometry/GeometryServer"),
-      layerInfos:attrInfos,
-      templatePicker: templatePicker,
-      toolbarVisible: true,
-            createOptions: {
-              polylineDrawTools:[ Editor.CREATE_TOOL_FREEHAND_POLYLINE ],
-              polygonDrawTools: [ Editor.CREATE_TOOL_FREEHAND_POLYGON,
-                Editor.CREATE_TOOL_CIRCLE,
-                Editor.CREATE_TOOL_TRIANGLE,
-                Editor.CREATE_TOOL_RECTANGLE
-              ]
-            },
-            toolbarOptions: {
-              reshapeVisible: true
-            }};
+    map.infoWindow.setContent(attInspector.domNode);
+    map.infoWindow.resize(350, 240);
 
-  var params = {settings: settings};
-  var editorWidget = new Editor(params, 'editorDiv');
-  editorWidget.startup();
-}
+    var settings = {
+        map: map,
+        geometryService: new GeometryService("https://tasks.arcgisonline.com/arcgis/rest/services/Geometry/GeometryServer"),
+        layerInfos:attrInfos,
+        templatePicker: templatePicker,
+        toolbarVisible: true,
+              createOptions: {
+                polylineDrawTools:[ Editor.CREATE_TOOL_FREEHAND_POLYLINE ],
+                polygonDrawTools: [ Editor.CREATE_TOOL_FREEHAND_POLYGON,
+                  Editor.CREATE_TOOL_CIRCLE,
+                  Editor.CREATE_TOOL_TRIANGLE,
+                  Editor.CREATE_TOOL_RECTANGLE
+                ]
+              },
+              toolbarOptions: {
+                reshapeVisible: true
+              }};
+
+    var params = {settings: settings};
+    var editorWidget = new Editor(params, 'editorDiv');
+    editorWidget.startup();
+} //end initEditing function
 
  
-
-
-
-
-
- 
-
-
-
 
 	}); //end require statement
 
