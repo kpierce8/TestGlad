@@ -15,6 +15,7 @@ require([
   "esri/InfoTemplate",
    "dijit/form/Button",
   "esri/tasks/GeometryService",
+  "esri/geometry/Point",
 	'esri/symbols/SimpleMarkerSymbol',
    "esri/symbols/SimpleLineSymbol",
     "esri/symbols/SimpleFillSymbol",
@@ -28,8 +29,11 @@ require([
   "dijit/layout/BorderContainer",
 	'dijit/layout/ContentPane', 
   'dijit/WidgetSet',
-	'dojo/domReady'], function(Map, Draw, Graphic, config, Color,  FeatureLayer, Query, QueryTask, InfoTemplate, Button, GeometryService, SimpleMarkerSymbol, 
-    SimpleLineSymbol, SimpleFillSymbol, Editor, TemplatePicker, AttributeInspector, arrayUtils, parser, domConstruct, registry){
+	'dojo/domReady'], 
+  function(Map, Draw, Graphic, config, Color,  FeatureLayer, 
+    Query, QueryTask, InfoTemplate, Button, GeometryService,
+    Point, SimpleMarkerSymbol, SimpleLineSymbol, SimpleFillSymbol, Editor, 
+    TemplatePicker, AttributeInspector, arrayUtils, parser, domConstruct, registry) {
 
     parser.parse({rootNode: header});
 
@@ -43,7 +47,9 @@ require([
 
     var testUrl1 =  "http://services.arcgis.com/rcya3vExsaVBGUDp/arcgis/rest/services/TestOne/FeatureServer/0"
     var cityUgaUrl = "https://services.arcgis.com/6lCKYNJLvwTXqrmp/arcgis/rest/services/CityUGA/FeatureServer/0/query?outFields=*&where=1%3D1"
-    var wriaUrl = "https://services.arcgis.com/6lCKYNJLvwTXqrmp/arcgis/rest/services/WAECY_WRIA/FeatureServer/0/query?outFields=*&where=1%3D1"
+    var wriaUrl = "https://services.arcgis.com/6lCKYNJLvwTXqrmp/arcgis/rest/services/WAECY_WRIA/FeatureServer/0" ///query?outFields=*&where=1%3D1"
+
+var wriaUrl2 = "http://koop.dc.esri.com/socrata/wastate/fwgq-q5ti/FeatureServer/0" ///query?outFields=*&where=1%3D1
 
     var testTemplate = new InfoTemplate("Polygon attributes", "Species: ${Species}\
       <br>Poly Type: ${PolyType}<br>Creation Date: ${CreationD}\
@@ -99,8 +105,10 @@ require([
         // doesn't fire till after mouse button is raised after finishing draw
         console.log("Add to Map");
         console.log(evt.geometry);
-        var startPointCoord = evt.geometry.rings[0][0];
+        var startPointCoord = new Point(evt.geometry.rings[0][0]);
+        startPointCoord.spatialReference = evt.geometry.spatialReference;
         console.log(startPointCoord);
+        queryMapService(startPointCoord);
               var symbol;
            //   this.editing = true;
               toolbar.deactivate();
@@ -128,9 +136,34 @@ require([
               testlayer.refresh();
             }
 
+  function showResults(results){
+          var resultCount = results.features.length;
+          var wriaName = ""
+          for (var i = 0; i < resultCount; i++) {  
+            var featureAttributes = results.features[i].attributes;  
+            wriaName += featureAttributes["WRIA_NM"] + ", ";  
+          }  
+          console.log(wriaName);  
+
+        }
+//From https://geonet.esri.com/thread/113090
+          function queryMapService(Geom){  
+          console.log(Geom);
+          var query = new Query();  
+          query.returnGeometry = false;     
+          query.outFields = ["*"];     
+          query.geometry = Geom  
+          var queryTask = new QueryTask(wriaUrl);     
+          // queryTask.on ("error", function (err) {     
+          //   console.log("error in queryTask: " + err.message);     
+          // });     
+          console.log(queryTask);
+          queryTask.execute(query, showResults); //,  function (err) {     
+        //    console.log("error in queryTask: " + err.message);     
+        //  });  
+        }      
+
       
-
-
 // Editor code coming from Building Web and Mobile ArcGIS Server Applications with Javascript PACKT 2014
 
 
