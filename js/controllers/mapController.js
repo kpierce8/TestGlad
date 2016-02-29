@@ -38,8 +38,8 @@ require([
     parser.parse({rootNode: header});
 
   //  esriConfig.defaults.io.proxyUrl = "/proxy/";    
-
-		map = new Map('mapDiv', {
+    var toolbar, thisEvent;
+		var map = new Map('mapDiv', {
 			basemap: 'topo',
 			center: [-122.8961, 47.0366],
 			zoom: 13
@@ -95,25 +95,26 @@ var wriaUrl2 = "http://koop.dc.esri.com/socrata/wastate/fwgq-q5ti/FeatureServer/
       function createToolbar(amap) {
         console.log("creating toolbar");
         toolbar = new Draw(map);
-        toolbar.on("draw-end", addToMap);
+        // toolbar.on("draw-end", addToMap);
+         toolbar.on("draw-end", queryMapService);
         }
 
 // Original editing code, adds polygons based on sandbox sample
 // 3  //
 //Adding new polygons
-      function addToMap(evt) {
+      function addToMap(results) {
         // doesn't fire till after mouse button is raised after finishing draw
         console.log("Add to Map");
-        console.log(evt.geometry);
-        var startPointCoord = new Point(evt.geometry.rings[0][0]);
-        startPointCoord.spatialReference = evt.geometry.spatialReference;
-        console.log(startPointCoord);
-        queryMapService(startPointCoord);
+     //   console.log(evt.geometry);
+     //   var startPointCoord = new Point(evt.geometry.rings[0][0]);
+     //   startPointCoord.spatialReference = evt.geometry.spatialReference;
+     //   console.log(startPointCoord);
+     //   queryMapService(startPointCoord);
               var symbol;
            //   this.editing = true;
               toolbar.deactivate();
               map.showZoomSlider();
-              switch (evt.geometry.type) {
+              switch (thisEvent.geometry.type) {
                 case "polyline":
                   symbol = new SimpleLineSymbol();
                   break;
@@ -128,7 +129,17 @@ var wriaUrl2 = "http://koop.dc.esri.com/socrata/wastate/fwgq-q5ti/FeatureServer/
              
               attributes.Id = 1;
               attributes.Species = "Tree";
-              var graphic = new Graphic(evt.geometry, symbol, attributes);
+
+          var resultCount = results.features.length;
+          //var wriaName = ""
+          if (resultCount > 0) {  
+            var featureAttributes = results.features[0].attributes;  
+            attributes.VitalSign = featureAttributes["WRIA_NM"];  
+          }  
+          console.log("WRIA is " + attributes.VitalSign);  
+
+
+              var graphic = new Graphic(thisEvent.geometry, symbol, attributes);
               console.log(graphic);
              // console.log(this.testlayer.graphics.count);
               testlayer.applyEdits([graphic]).then(alert("Enjoy this fun test popup"));
@@ -147,18 +158,25 @@ var wriaUrl2 = "http://koop.dc.esri.com/socrata/wastate/fwgq-q5ti/FeatureServer/
 
         }
 //From https://geonet.esri.com/thread/113090
-          function queryMapService(Geom){  
-          console.log(Geom);
+          function queryMapService(evt){  
+
+        thisEvent = evt;
+        var startPointCoord = new Point(thisEvent.geometry.rings[0][0]);
+        startPointCoord.spatialReference = thisEvent.geometry.spatialReference;
+        console.log(startPointCoord);
+
+
+
           var query = new Query();  
           query.returnGeometry = false;     
           query.outFields = ["*"];     
-          query.geometry = Geom  
+          query.geometry = startPointCoord;  
           var queryTask = new QueryTask(wriaUrl);     
           // queryTask.on ("error", function (err) {     
           //   console.log("error in queryTask: " + err.message);     
           // });     
           console.log(queryTask);
-          queryTask.execute(query, showResults); //,  function (err) {     
+          queryTask.execute(query, addToMap); //,  function (err) {     
         //    console.log("error in queryTask: " + err.message);     
         //  });  
         }      
