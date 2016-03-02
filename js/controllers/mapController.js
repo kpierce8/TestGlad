@@ -13,6 +13,7 @@ require([
 	'esri/tasks/query',
 	'esri/tasks/QueryTask',
   "esri/InfoTemplate",
+  "esri/IdentityManager",
    "dijit/form/Button",
   "esri/tasks/GeometryService",
   "esri/geometry/Point",
@@ -31,14 +32,14 @@ require([
   'dijit/WidgetSet',
 	'dojo/domReady'], 
   function(Map, Draw, Graphic, config, Color,  FeatureLayer, 
-    Query, QueryTask, InfoTemplate, Button, GeometryService,
+    Query, QueryTask, InfoTemplate, IdentityManager, Button, GeometryService,
     Point, SimpleMarkerSymbol, SimpleLineSymbol, SimpleFillSymbol, Editor, 
     TemplatePicker, AttributeInspector, arrayUtils, parser, domConstruct, registry) {
 
     parser.parse({rootNode: header});
 
   //  esriConfig.defaults.io.proxyUrl = "/proxy/";    
-    var toolbar, thisEvent;
+    var toolbar, thisEvent, userID;
 		var map = new Map('mapDiv', {
 			basemap: 'topo',
 			center: [-122.8961, 47.0366],
@@ -120,6 +121,7 @@ require([
                   break;
               }
               var attributes = {};
+              attributes.Creator = userID;
               attributes.Id = 1;
               attributes.Species = "Tree";
 
@@ -178,6 +180,11 @@ require([
  
 function initEditing(bob){
   console.log("Init Editing");
+
+      var cred = IdentityManager.getCredential(testUrl1).then(function(value){ userID = value.userId;});
+      //console.log(cred);
+      //console.log(cred.results.resources.userId);
+    //  userID = cred.results.resources.userId;
       var templateLayers = arrayUtils.map(bob.layers, function(result){
        return result.layer;
       });
