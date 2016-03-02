@@ -49,11 +49,11 @@ require([
     var cityUgaUrl = "https://services.arcgis.com/6lCKYNJLvwTXqrmp/arcgis/rest/services/CityUGA/FeatureServer/0/query?outFields=*&where=1%3D1"
     var wriaUrl = "https://services.arcgis.com/6lCKYNJLvwTXqrmp/arcgis/rest/services/WAECY_WRIA/FeatureServer/0" ///query?outFields=*&where=1%3D1"
 
-var wriaUrl2 = "http://koop.dc.esri.com/socrata/wastate/fwgq-q5ti/FeatureServer/0" ///query?outFields=*&where=1%3D1
+    var wriaUrl2 = "http://koop.dc.esri.com/socrata/wastate/fwgq-q5ti/FeatureServer/0" ///query?outFields=*&where=1%3D1
 
-    var testTemplate = new InfoTemplate("Polygon attributes", "Species: ${Species}\
-      <br>Poly Type: ${PolyType}<br>Creation Date: ${CreationD}\
-      <br>WRIA: ${WRIA}");
+    // var testTemplate = new InfoTemplate("Polygon attributes", "Species: ${Species}\
+    //   <br>Poly Type: ${PolyType}<br>Creation Date: ${CreationD}\
+    //   <br>WRIA: ${WRIA}");
 
     var testlayer = new FeatureLayer(testUrl1, {
         mode: FeatureLayer.MODE_ONDEMAND,
@@ -70,7 +70,7 @@ var wriaUrl2 = "http://koop.dc.esri.com/socrata/wastate/fwgq-q5ti/FeatureServer/
       });
 
     var layers = [];
-      layers.push(wrialayer);
+     // layers.push(wrialayer);
       layers.push(testlayer);
 
       map.addLayers(layers);
@@ -105,13 +105,7 @@ var wriaUrl2 = "http://koop.dc.esri.com/socrata/wastate/fwgq-q5ti/FeatureServer/
       function addToMap(results) {
         // doesn't fire till after mouse button is raised after finishing draw
         console.log("Add to Map");
-     //   console.log(evt.geometry);
-     //   var startPointCoord = new Point(evt.geometry.rings[0][0]);
-     //   startPointCoord.spatialReference = evt.geometry.spatialReference;
-     //   console.log(startPointCoord);
-     //   queryMapService(startPointCoord);
               var symbol;
-           //   this.editing = true;
               toolbar.deactivate();
               map.showZoomSlider();
               switch (thisEvent.geometry.type) {
@@ -126,24 +120,18 @@ var wriaUrl2 = "http://koop.dc.esri.com/socrata/wastate/fwgq-q5ti/FeatureServer/
                   break;
               }
               var attributes = {};
-             
               attributes.Id = 1;
               attributes.Species = "Tree";
 
           var resultCount = results.features.length;
-          //var wriaName = ""
           if (resultCount > 0) {  
             var featureAttributes = results.features[0].attributes;  
             attributes.VitalSign = featureAttributes["WRIA_NM"];  
           }  
-          console.log("WRIA is " + attributes.VitalSign);  
-
 
               var graphic = new Graphic(thisEvent.geometry, symbol, attributes);
               console.log(graphic);
-             // console.log(this.testlayer.graphics.count);
               testlayer.applyEdits([graphic]).then(alert("Enjoy this fun test popup"));
-            //  this.editing = false;
               testlayer.refresh();
             }
 
@@ -159,14 +147,10 @@ var wriaUrl2 = "http://koop.dc.esri.com/socrata/wastate/fwgq-q5ti/FeatureServer/
         }
 //From https://geonet.esri.com/thread/113090
           function queryMapService(evt){  
-
         thisEvent = evt;
         var startPointCoord = new Point(thisEvent.geometry.rings[0][0]);
         startPointCoord.spatialReference = thisEvent.geometry.spatialReference;
         console.log(startPointCoord);
-
-
-
           var query = new Query();  
           query.returnGeometry = false;     
           query.outFields = ["*"];     
