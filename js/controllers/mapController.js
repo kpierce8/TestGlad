@@ -39,7 +39,7 @@ require([
     parser.parse({rootNode: header});
 
   //  esriConfig.defaults.io.proxyUrl = "/proxy/";    
-    var toolbar, thisEvent, userID;
+    var toolbar, thisEvent, userID, wriaName;
 		var map = new Map('mapDiv', {
 			basemap: 'topo',
 			center: [-122.8961, 47.0366],
@@ -49,7 +49,7 @@ require([
     var testUrl1 =  "http://services.arcgis.com/rcya3vExsaVBGUDp/arcgis/rest/services/TestOne/FeatureServer/0"
     var cityUgaUrl = "https://services.arcgis.com/6lCKYNJLvwTXqrmp/arcgis/rest/services/CityUGA/FeatureServer/0/query?outFields=*&where=1%3D1"
     var wriaUrl = "https://services.arcgis.com/6lCKYNJLvwTXqrmp/arcgis/rest/services/WAECY_WRIA/FeatureServer/0" ///query?outFields=*&where=1%3D1"
-
+    var countyURL = "https://services.arcgis.com/jsIt88o09Q0r1j8h/arcgis/rest/services/StateBoundary/FeatureServer/0" ///query?outFields=*&where=1%3D1
     var wriaUrl2 = "http://koop.dc.esri.com/socrata/wastate/fwgq-q5ti/FeatureServer/0" ///query?outFields=*&where=1%3D1
 
     // var testTemplate = new InfoTemplate("Polygon attributes", "Species: ${Species}\
@@ -97,7 +97,7 @@ require([
         console.log("creating toolbar");
         toolbar = new Draw(map);
         // toolbar.on("draw-end", addToMap);
-         toolbar.on("draw-end", queryMapService);
+         toolbar.on("draw-end", queryWRIAMapService);
         }
 
 // Original editing code, adds polygons based on sandbox sample
@@ -124,11 +124,13 @@ require([
               attributes.Creator = userID;
               attributes.Id = 1;
               attributes.Species = "Tree";
+              attributes.VitalSign = wriaName;
+
 
           var resultCount = results.features.length;
           if (resultCount > 0) {  
             var featureAttributes = results.features[0].attributes;  
-            attributes.VitalSign = featureAttributes["WRIA_NM"];  
+            attributes.County = featureAttributes["JURNM"];  
           }  
 
               var graphic = new Graphic(thisEvent.geometry, symbol, attributes);
@@ -148,7 +150,7 @@ require([
 
         }
 //From https://geonet.esri.com/thread/113090
-          function queryMapService(evt){  
+          function queryWRIAMapService(evt){  
         thisEvent = evt;
         var startPointCoord = new Point(thisEvent.geometry.rings[0][0]);
         startPointCoord.spatialReference = thisEvent.geometry.spatialReference;
@@ -158,6 +160,32 @@ require([
           query.outFields = ["*"];     
           query.geometry = startPointCoord;  
           var queryTask = new QueryTask(wriaUrl);     
+          // queryTask.on ("error", function (err) {     
+          //   console.log("error in queryTask: " + err.message);     
+          // });     
+          console.log(queryTask);
+          queryTask.execute(query, queryCountyMapService); //,  function (err) {     
+        //    console.log("error in queryTask: " + err.message);     
+        //  });  
+        }      
+
+
+ function queryCountyMapService(results){  
+
+        var resultCount = results.features.length;
+          if (resultCount > 0) {  
+            var featureAttributes = results.features[0].attributes;  
+            wriaName = featureAttributes["WRIA_NM"];  
+          }  
+
+        var startPointCoord = new Point(thisEvent.geometry.rings[0][0]);
+        startPointCoord.spatialReference = thisEvent.geometry.spatialReference;
+        console.log(startPointCoord);
+          var query = new Query();  
+          query.returnGeometry = false;     
+          query.outFields = ["*"];     
+          query.geometry = startPointCoord;  
+          var queryTask = new QueryTask(countyURL);     
           // queryTask.on ("error", function (err) {     
           //   console.log("error in queryTask: " + err.message);     
           // });     
