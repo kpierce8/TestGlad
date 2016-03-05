@@ -1,7 +1,6 @@
 angular.module('esriApp').controller('MapCntl', function($scope){
 		$scope.name = "Ken Pierce";
 
-//adding a comment to make sure pc is working
 
 var map, toolbar, symbol
 		
@@ -20,12 +19,12 @@ require([
   "esri/tasks/GeometryService",
   "esri/geometry/Point",
 	'esri/symbols/SimpleMarkerSymbol',
-   "esri/symbols/SimpleLineSymbol",
-    "esri/symbols/SimpleFillSymbol",
-    'esri/dijit/editing/Editor',
-    "esri/dijit/editing/TemplatePicker",
-    "esri/dijit/AttributeInspector",
-    "dojo/_base/array",
+  "esri/symbols/SimpleLineSymbol",
+  "esri/symbols/SimpleFillSymbol",
+  'esri/dijit/editing/Editor',
+  "esri/dijit/editing/TemplatePicker",
+  "esri/dijit/AttributeInspector",
+  "dojo/_base/array",
   'dojo/parser',
   "dojo/dom-construct",
 	'dijit/registry',
@@ -61,7 +60,7 @@ require([
     var testlayer = new FeatureLayer(testUrl1, {
         mode: FeatureLayer.MODE_ONDEMAND,
         // infoTemplate: testTemplate,
-        outFields: ['Species', 'FID', 'VitalSign', 'WRIA', 'Creator', 'EditDate', 'County']
+        outFields: ['Species', 'FID', 'VitalSign', 'WRIA', 'Creator', 'EditDate', 'County', 'GUID']
         //outFields: ['*']
       });
 
@@ -156,19 +155,14 @@ require([
         thisEvent = evt;
         var startPointCoord = new Point(thisEvent.geometry.rings[0][0]);
         startPointCoord.spatialReference = thisEvent.geometry.spatialReference;
-        console.log(startPointCoord);
           var query = new Query();  
           query.returnGeometry = false;     
           query.outFields = ["*"];     
           query.geometry = startPointCoord;  
-          var queryTask = new QueryTask(wriaUrl);     
-          // queryTask.on ("error", function (err) {     
-          //   console.log("error in queryTask: " + err.message);     
-          // });     
+          var queryTask = new QueryTask(wriaUrl);        
           console.log(queryTask);
           queryTask.execute(query, queryCountyMapService); //,  function (err) {     
-        //    console.log("error in queryTask: " + err.message);     
-        //  });  
+ 
         }      
 
 
@@ -179,7 +173,6 @@ require([
             var featureAttributes = results.features[0].attributes;  
             wriaName = featureAttributes["WRIA_NM"];  
           }  
-
         var startPointCoord = new Point(thisEvent.geometry.rings[0][0]);
         startPointCoord.spatialReference = thisEvent.geometry.spatialReference;
         console.log(startPointCoord);
@@ -187,14 +180,9 @@ require([
           query.returnGeometry = false;     
           query.outFields = ["*"];     
           query.geometry = startPointCoord;  
-          var queryTask = new QueryTask(countyURL);     
-          // queryTask.on ("error", function (err) {     
-          //   console.log("error in queryTask: " + err.message);     
-          // });     
-          console.log(queryTask);
+          var queryTask = new QueryTask(countyURL);         
           queryTask.execute(query, addToMap); //,  function (err) {     
-        //    console.log("error in queryTask: " + err.message);     
-        //  });  
+ 
         }      
 
       
