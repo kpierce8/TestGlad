@@ -1,6 +1,8 @@
 angular.module('esriApp').controller('MapCntl', function($scope){
 		$scope.name = "Ken Pierce";
 
+//adding a comment to make sure pc is working
+
 var map, toolbar, symbol
 		
 require([
