@@ -77,7 +77,7 @@ require([
 
       map.addLayers(layers);
 
-// STRAT INTERACTION CODE
+// START INTERACTION CODE
       registry.forEach(function(d) {
           if ( d.declaredClass === "dijit.form.Button" ) {
             d.on("click", activateTool);
